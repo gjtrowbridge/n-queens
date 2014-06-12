@@ -14,7 +14,18 @@
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n rooks placed such that none of them can attack each other
 
 window.findNRooksSolution = function(n) {
-  var solution = undefined; //fixme
+  var solution = [];
+
+  for(var row = 0; row < n; row++){
+    solution.push([]);
+    for( var col = 0; col < n; col++){
+      if( row === col ){
+        solution[row].push(1);
+      } else {
+        solution[row].push(0);
+      }
+    }
+  }
 
   console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
   return solution;
@@ -24,17 +35,80 @@ window.findNRooksSolution = function(n) {
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+
+  var solutionCount = 1;
+  for( var i = 2; i <= n; i++){
+    solutionCount *= i;
+  }
 
   console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
   return solutionCount;
 };
 
+window.nQueensHelpers = {};
+window.nQueensHelpers.isSafe = function(simpleSolution){
+  var reservedMajor = {};
+  var reservedMinor = {};
+  var n = simpleSolution.length;
+  for(i = 0; i < n; i++){
+    var diffMajor = i - simpleSolution[i];
+    var diffMinor = n - 1 - i - simpleSolution[i];
+    if( diffMajor in reservedMajor ){
+      return false;
+    } else {
+      reservedMajor[diffMajor] = true;
+    }
+    if( diffMinor in reservedMinor ){
+      return false;
+    } else {
+      reservedMinor[diffMinor] = true;
+    }
+  }
+  return true;
+};
 
+window.nQueensHelpers.eachPermutation = function(list, iterator){
+
+  var innerPerm = function(soFar, remaining){
+    if( remaining.length === 0 ) {
+      iterator(soFar);
+    } else {
+      for(var i = 0; i < remaining.length; i++){
+        var newRemaining = remaining.slice();
+        var newSoFar = soFar.slice();
+        var toPush = newRemaining.splice(i,1)[0];
+        newSoFar.push(toPush);
+        innerPerm(newSoFar, newRemaining);
+      }
+    }
+  };
+
+  innerPerm([],list);
+
+};
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
 window.findNQueensSolution = function(n) {
-  var solution = undefined; //fixme
+  var simpleSolution;
+  window.nQueensHelpers.eachPermutation(_.range(n),function(permutation){
+    if( window.nQueensHelpers.isSafe(permutation) ){
+      simpleSolution = permutation;
+    }
+  });
+
+  var solution = [];
+  for(var row = 0; row < n; row++){
+    solution.push([]);
+    for(var col = 0; col < n; col++){
+      if (simpleSolution === undefined) {
+        solution[row][col] = 0;
+      } else if ( simpleSolution[row] === col ){
+        solution[row][col] = 1;
+      } else {
+        solution[row][col] = 0;
+      }
+    }
+  }
 
   console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution));
   return solution;
@@ -43,7 +117,14 @@ window.findNQueensSolution = function(n) {
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+
+  var solutionCount = 0;
+
+  window.nQueensHelpers.eachPermutation(_.range(n),function(permutation){
+    if( window.nQueensHelpers.isSafe(permutation) ){
+      solutionCount++;
+    }
+  });
 
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
   return solutionCount;
