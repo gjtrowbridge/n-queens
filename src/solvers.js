@@ -67,6 +67,57 @@ window.nQueensHelpers.isSafe = function(simpleSolution){
   return true;
 };
 
+window.nQueensPruneCount = function(n){
+  var count = 0;
+  var innerPerm = function(soFar, remaining, diag1, diag2){
+    if( remaining.length === 0 ) {
+      //this is a solution
+      count++;
+
+      var lastPushed = soFar[soFar.length -1];
+      var diffMajor = soFar.length - 1 - lastPushed;
+      var diffMinor = n - 1 - lastPushed - (soFar.length - 1);
+      delete diag1[diffMajor];
+      delete diag2[diffMinor];
+
+    } else {
+      //check if should be pruned
+        // add new number to the diags arrays
+      for(var i = 0; i < remaining.length; i++){
+        var newRemaining = remaining.slice();
+        //newSoFar["diags"] = soFar.diags;
+        var toPush = newRemaining.splice(i,1)[0];
+
+        var diffMajor = soFar.length - toPush; //diag code1
+        var diffMinor = n - 1 - toPush - soFar.length; //diag code2
+        if( diffMajor in diag1 || diffMinor in diag2 ) {
+          // console.log("prune");
+          // console.log("sofar: " + soFar.join(", "));
+          // console.log("toPush: " + toPush);
+          // console.log("diag1: " + Object.keys(diag1).join(", "));
+          // console.log("diag2: " + Object.keys(diag2).join(", "));
+          // console.log("---");
+        } else {
+          diag1[diffMajor] = true; //this may cause a problem
+          diag2[diffMinor] = true;
+          var newSoFar = soFar.slice();
+          newSoFar.push(toPush);
+          innerPerm(newSoFar, newRemaining, diag1, diag2);
+        }
+      }
+      var lastPushed = soFar[soFar.length -1];
+      var diffMajor = soFar.length - 1 - lastPushed;
+      var diffMinor = n - 1 - lastPushed - (soFar.length - 1);
+      delete diag1[diffMajor];
+      delete diag2[diffMinor];
+    }
+  };
+
+  innerPerm([], _.range(n), {}, {});
+  return count;
+
+};
+
 window.nQueensHelpers.eachPermutation = function(list, iterator){
 
   var innerPerm = function(soFar, remaining){
@@ -116,16 +167,16 @@ window.findNQueensSolution = function(n) {
 
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
-window.countNQueensSolutions = function(n) {
+  window.countNQueensSolutions = function(n) {
 
-  var solutionCount = 0;
+    var solutionCount = 0;
 
-  window.nQueensHelpers.eachPermutation(_.range(n),function(permutation){
-    if( window.nQueensHelpers.isSafe(permutation) ){
-      solutionCount++;
-    }
-  });
+    window.nQueensHelpers.eachPermutation(_.range(n),function(permutation){
+      if( window.nQueensHelpers.isSafe(permutation) ){
+        solutionCount++;
+      }
+    });
 
-  console.log('Number of solutions for ' + n + ' queens:', solutionCount);
-  return solutionCount;
-};
+    console.log('Number of solutions for ' + n + ' queens:', solutionCount);
+    return solutionCount;
+  };
