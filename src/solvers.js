@@ -221,3 +221,51 @@ window.countNQueensSolutionsPruning = function(n){
   return count;
 
 };
+
+// return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
+window.countNQueensSolutionsBitShift = function(n) {
+  var count = 0;
+  var done = Math.pow(2,n) - 1;
+
+  //in a nutshell, we will start at the "top" of the board
+  //and fill in one queen per row, keeping track of "occupied"
+  //diagonals and columns using bits.
+  var innerRecurse = function(ld, col, rd) {
+    //If all columns are filled, we have a valid solution!
+    if (col === done) {
+      count++;
+      return;
+    }
+
+    //gets all valid positions
+    //(ld, rd, and col all hold "1" where
+    //a queen may NOT be placed--they are the
+    //"occupied diags or columns")
+    var poss = ~(ld | rd | col);
+
+    //Only loops while there is at least one valid position
+    while ( poss & done ) {
+      //gets the first valid position
+      //This is the "chosen" position for the next
+      //queen placement
+      var bit = poss & -poss;
+
+      //Removes the most recently selected queen position
+      //from the "available positions"
+      poss -= bit;
+
+      //"Adds" the "chosen" position to the storage
+      //for the "occupied" diagonals and "occupied" column,
+      //then calls the function recursively to go "down" the
+      //board
+
+      //ld represents the diagonal going from top left to bottom right
+      //rd represents the diagonal going from top right to bottom left
+      innerRecurse((ld|bit)>>1, col|bit, (rd|bit)<<1);
+    }
+  };
+
+  innerRecurse(0,0,0);
+
+  return count;
+};
